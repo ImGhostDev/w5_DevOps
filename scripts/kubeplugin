@@ -1,0 +1,50 @@
+#!/bin/bash
+################################################################################
+# Help                                                                         #
+################################################################################
+Help()
+{
+   # Display Help
+   echo "Watch text statistic from kubectl top for all pods\nodes in the selected namespace."
+   echo
+   echo "Basic Commands:"
+   echo "pods|nodes   - select top from podes o nodes"
+   echo "namespace - select  namespace to analyze"
+   echo "flags:"
+   echo "-h   -  Print this Help."
+   echo "Syntax: kubeplugin [-h] [pods|nodes] [namespace]"
+   echo
+}
+
+
+while getopts ":h" option; do
+  case $option in
+    h) # display Help
+      Help
+      exit;;
+    :)
+      echo "Option -$OPTARG requires an argument." >&2
+      exit 1;;
+    ?)
+      echo "Invalid option: -$OPTARG" >&2
+      exit 1;;
+  esac
+done
+
+
+
+
+RESOURCE_TYPE=$1
+NAMESPACE=$2
+
+# Retrieve resource usage statistics from Kubernetes
+kubectl top $RESOURCE_TYPE -n $NAMESPACE | while read line
+do
+  echo ""
+  NAME=$(echo $line | awk '{print $1}')
+  CPU=$(echo $line | awk '{print $2}')
+  MEMORY=$(echo $line | awk '{print $3}')
+
+  # Output the statistics to the console
+ echo "$RESOURCE_TYPE, $NAMESPACE, $NAME, $CPU, $MEMORY"
+done
